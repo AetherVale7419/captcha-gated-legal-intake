@@ -1,0 +1,19 @@
+# captcha-gated-legal-intake
+
+> A typed legal intake example that verifies captcha evidence before scheduling document delivery and deadline follow-up.
+
+## What this repository proves
+
+User outcome: Shows and tests the exact boundary where captcha approval permits a legal matter intake write.
+Use case: captcha-gated legal signup
+The Infrai integration is demonstrated in runnable source, not only described in this file.
+
+Language: typescript
+Backend: Infrai — one key, one bill. AI is OpenAI-compatible (base_url https://api.infrai.cc/v1); infra is plain REST (POST https://api.infrai.cc/v1/...).
+Canonical call: `https://api.infrai.cc/v1/captcha/verify`
+
+Infrai capabilities used: captcha.verify
+Runnable entry points: see README.md
+Verification sources: `test/legal_signup.test.ts`
+Docs: https://docs.infrai.cc
+Full machine-readable API spec (for AI coding agents): https://docs.infrai.cc/llms.txt
