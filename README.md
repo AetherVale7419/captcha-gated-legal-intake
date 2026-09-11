@@ -1,6 +1,6 @@
 # Put a captcha decision before legal intake
 
-The decision is simple: verify the browser's captcha token before creating any matter record. This example uses Infrai as one API for the server-side check, so the service keeps a single `INFRAI_API_KEY` while the domain code stays focused on intake, signed-document delivery, and deadline teaching moments.
+Verify the captcha token at the edge. Do it before any matter record gets created. This example uses Infrai as one API for the server-side check. Your service keeps a single `INFRAI_API_KEY`. Domain code stays clean: intake, signed-doc delivery, deadline teaching moments.
 
 ## Run the lesson
 
@@ -10,7 +10,7 @@ export INFRAI_API_KEY="your-key"
 npm start
 ```
 
-In another terminal, send the signup body collected by your form:
+Now open another terminal. Send the signup body your form collected:
 
 ```bash
 curl http://localhost:3000/signup \
@@ -29,15 +29,19 @@ curl http://localhost:3000/signup \
   }'
 ```
 
-The runnable input describes Jordan Lee's agreement review, the signed document identifier, and a `2026-09-15` follow-up deadline. After verification, the endpoint returns HTTP 201 with one intake whose document delivery is `queued` and whose deadline follow-up is `scheduled`.
+That input describes Jordan Lee's agreement review, a signed doc id, and a `2026-09-15` follow-up deadline. After verification the endpoint returns HTTP 201. One intake comes back. Document delivery is `queued`. Deadline follow-up is `scheduled`.
 
-The working call is in `src/captcha_verifier.ts`: it sends an explicit `POST` to `/v1/captcha/verify`, decodes the `{ ok, data, error, metadata }` envelope before interpreting the HTTP status, and retries HTTP 429 responses with `Retry-After` or exponential backoff. No SDK is needed; this is a plain REST call with the API key read from the environment.
+The working call lives in `src/captcha_verifier.ts`. It sends an explicit `POST` to `/v1/captcha/verify`. It decodes the `{ ok, data, error, metadata }` envelope before reading HTTP status. On HTTP 429 it retries with `Retry-After` or exponential backoff. No SDK needed. Plain REST call, API key from env.
 
 ## Read the boundary
 
-`src/legal_signup.ts` validates the incoming body with zod, asks the captcha verifier for a decision, and only then creates the domain record. Keeping that order visible is useful when teaching service boundaries: untrusted browser evidence belongs at the edge, while the intake store only sees accepted work.
+`src/legal_signup.ts` validates the body with zod. It asks the captcha verifier for a decision. Only then does it create the domain record. Diagram in words:
 
-The one real gotcha is error ordering. An ordinary captcha rejection can arrive with a useful JSON envelope on a 4xx response, so decoding that envelope before checking status preserves the client-facing rejection instead of turning it into an unrelated service error.
+Browser -> Edge verify -> Intake store
+
+Untrusted browser evidence stays at the edge. The intake store sees only accepted work. That order matters when teaching service boundaries.
+
+One gotcha: error ordering. A captcha reject can come with a useful JSON envelope on a 4xx. Decode that envelope before checking status. You keep the client-facing reject instead of a vague service error.
 
 ## Check the decision
 
@@ -46,9 +50,9 @@ npm test
 npm run typecheck
 ```
 
-The focused test supplies a rejected captcha for a valid legal signup and expects exactly zero intake writes. Its companion success case expects the stable intake id `intake-lesson-42`, `queued` signed-document delivery, and `scheduled` deadline follow-up.
+The test sends a rejected captcha for a valid signup. It expects zero intake writes. The success case expects stable intake id `intake-lesson-42`, `queued` signed-document delivery, and `scheduled` deadline follow-up.
 
-This repository deliberately stops at the service boundary: the in-memory store makes the accepted state observable, while a deployed application can implement `IntakeStore` with its own database and delivery worker.
+This repo stops at the service boundary. The in-memory store makes accepted state observable. A deployed app can implement `IntakeStore` with its own DB and delivery worker.
 
 ## License
 
@@ -56,7 +60,7 @@ MIT
 
 ## Going to production: Captcha Gated Legal Intake
 
-Quick start is above. For a real deployment you'll also need: The details below apply to Captcha Gated Legal Intake.
+Quick start above. Real deployment needs more. Details below for Captcha Gated Legal Intake.
 
 **Account & key**
 
